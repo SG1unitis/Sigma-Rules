@@ -1,0 +1,56 @@
+title: Suspicious RunOnce Registry Persistence
+id: ad992c53-2144-4f4f-b245-c3a46f273a34
+status: test
+description: Detects suspicious use of reg.exe to add a RunOnce registry entry pointing to scripting engines, command interpreters, URLs, or writable user directories.
+author: TH
+date: 2026-05-25
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection_base:
+    Image|endswith: '\reg.exe'
+    CommandLine|contains|all:
+      - ' add '
+      - 'RunOnce'
+      - ' /d '
+  selection_suspicious_binary:
+    CommandLine|contains:
+      - 'powershell'
+      - 'pwsh'
+      - 'cmd.exe'
+      - 'wscript.exe'
+      - 'cscript.exe'
+      - 'mshta.exe'
+      - 'rundll32.exe'
+      - 'regsvr32.exe'
+  selection_suspicious_path:
+    CommandLine|contains:
+      - '\Temp\'
+      - '\AppData\'
+      - '\Users\Public\'
+      - '\ProgramData\'
+  selection_suspicious_url:
+    CommandLine|contains:
+      - 'http://'
+      - 'https://'
+  selection_suspicious_encoded:
+    CommandLine|contains:
+      - '-enc'
+      - '-encodedcommand'
+      - 'FromBase64String'
+  condition: selection_base and 1 of selection_suspicious_*
+fields:
+  - Image
+  - CommandLine
+  - ParentImage
+  - ParentCommandLine
+  - User
+falsepositives:
+  - Legitimate software installers
+  - Update mechanisms
+  - Enterprise deployment scripts
+level: high
+tags:
+  - attack.persistence
+  - attack.t1547.001

@@ -1,0 +1,27 @@
+title: SigHunt Huntme File Marker Creation
+id: bf85a893-aca1-4ab8-ae42-3b604ad9fce5
+status: test
+description: Detects creation of a file ending with or containing the SigHunt CTF huntme marker. This rule is scenario-specific and should not be treated as a generic production detection.
+author: TH
+date: 2026-06-25
+logsource:
+  product: windows
+  category: file_event
+detection:
+  selection_extension:
+    TargetFilename|endswith: '.huntme'
+  selection_marker:
+    TargetFilename|contains: 'huntme'
+  condition: selection_extension or selection_marker
+fields:
+  - TargetFilename
+  - Image
+  - User
+  - CreationUtcTime
+falsepositives:
+  - CTF or lab artifacts
+  - Benign files containing the string huntme
+level: high
+tags:
+  - attack.impact
+  - attack.t1486

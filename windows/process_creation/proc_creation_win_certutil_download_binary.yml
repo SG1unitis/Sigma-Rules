@@ -1,0 +1,40 @@
+title: Certutil Download Of Executable From Remote URL
+id: c6ced9b2-bca0-4da6-97f0-dc7a4a066f4f
+status: test
+description: Detects certutil.exe used to download an executable file from a remote HTTP URL.
+author: TH
+date: 2026-05-24
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection_image:
+    Image|endswith: '\certutil.exe'
+  selection_download:
+    CommandLine|contains|all:
+      - '-urlcache'
+      - '-f'
+      - 'http'
+  selection_target:
+    CommandLine|contains:
+      - '.exe'
+      - '.dll'
+      - '.ps1'
+      - '.bat'
+      - '.vbs'
+  condition: selection_image and selection_download and selection_target
+fields:
+  - Image
+  - CommandLine
+  - ParentImage
+  - ParentCommandLine
+  - User
+  - CurrentDirectory
+falsepositives:
+  - Legitimate certificate retrieval
+  - Administrative troubleshooting
+  - Internal scripts abusing certutil for non-malicious downloads
+level: high
+tags:
+  - attack.command-and-control
+  - attack.t1105

@@ -1,0 +1,47 @@
+title: Suspicious Service Binary Path Modification With Sc.exe
+id: f2d40c22-e124-45a4-9890-4c4259a60d22
+status: test
+description: Detects suspicious modification of a Windows service binary path using sc.exe, especially when the new path references command interpreters or writable directories.
+author: TH
+date: 2026-05-25
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection_base:
+    Image|endswith: '\sc.exe'
+    CommandLine|contains|all:
+      - ' config '
+      - 'binPath'
+  selection_suspicious_binary:
+    CommandLine|contains:
+      - 'cmd.exe'
+      - 'powershell.exe'
+      - 'pwsh.exe'
+      - 'wscript.exe'
+      - 'cscript.exe'
+      - 'mshta.exe'
+      - 'rundll32.exe'
+      - 'regsvr32.exe'
+  selection_suspicious_path:
+    CommandLine|contains:
+      - '\Temp\'
+      - '\AppData\'
+      - '\Users\Public\'
+      - '\ProgramData\'
+  condition: selection_base and (selection_suspicious_binary or selection_suspicious_path)
+fields:
+  - Image
+  - CommandLine
+  - ParentImage
+  - ParentCommandLine
+  - User
+falsepositives:
+  - Legitimate service reconfiguration by administrators
+  - Software deployment tools
+  - Endpoint management platforms
+level: high
+tags:
+  - attack.persistence
+  - attack.privilege-escalation
+  - attack.t1543.003

@@ -1,0 +1,37 @@
+title: Netcat Command Shell Execution
+id: c4007ecd-9d99-4654-a8a3-4c749eed504a
+status: test
+description: Detects Netcat or Ncat executing cmd.exe through the -e option, a behavior commonly associated with reverse shells.
+author: TH
+date: 2026-05-25
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection_image:
+    Image|endswith:
+      - '\nc.exe'
+      - '\ncat.exe'
+      - '\netcat.exe'
+  selection_execution:
+    CommandLine|contains|all:
+      - ' -e '
+      - 'cmd.exe'
+  selection_hash_ctf:
+    Hashes|contains: 'MD5=523613A7B9DFA398CBD5EBD2DD0F4F38'
+  condition: selection_hash_ctf or (selection_image and selection_execution)
+fields:
+  - Image
+  - CommandLine
+  - ParentImage
+  - ParentCommandLine
+  - Hashes
+  - User
+falsepositives:
+  - Legitimate Netcat usage by administrators or network engineers
+  - Security testing tools
+level: high
+tags:
+  - attack.execution
+  - attack.command-and-control
+  - attack.t1059.003

@@ -1,0 +1,47 @@
+title: Suspicious HTTP Data Upload With Curl
+id: abb21d8e-31de-4208-918e-56770bc1aa11
+status: test
+description: Detects curl.exe being used to upload data over plain HTTP with suspicious exfiltration-related indicators.
+author: TH
+date: 2026-06-25
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection_image:
+    Image|endswith: '\curl.exe'
+  selection_http:
+    CommandLine|contains: 'http://'
+  selection_upload_option:
+    CommandLine|contains:
+      - ' -d '
+      - '--data'
+      - '--data-binary'
+      - '--data-raw'
+      - '--form'
+      - ' -F '
+      - ' -T '
+      - '--upload-file'
+  selection_suspicious_indicator:
+    CommandLine|contains:
+      - 'exfil'
+      - 'loot'
+      - 'dump'
+      - 'data'
+      - '@'
+  condition: selection_image and selection_http and selection_upload_option and selection_suspicious_indicator
+fields:
+  - Image
+  - CommandLine
+  - ParentImage
+  - ParentCommandLine
+  - User
+  - CurrentDirectory
+falsepositives:
+  - Legitimate API usage
+  - Internal scripts using curl to upload files
+  - Developer or administration activity
+level: high
+tags:
+  - attack.exfiltration
+  - attack.t1048.003
