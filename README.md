@@ -40,8 +40,4 @@ sigma-rules/
 │   │   │   └── proc_creation_win_curl_http_exfiltration.yml
 │   │   └── file_event/
 │   │       └── file_event_win_sighunt_huntme_marker.yml
-│   └── ctf/
-│       └── tryhackme_sighunt/
-│           └── original_notes.md
-└── docs/
-    └── sighunt_detection_notes.md
+
